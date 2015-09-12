@@ -5,7 +5,17 @@
             [garden.core :refer [css]]
             [hiccup.page :as page]
             [hiccup.form :as form]
-            [ring.middleware.params :refer [wrap-params]]))
+            [ring.middleware.params :refer [wrap-params]]
+            [ring.adapter.jetty :as jetty]
+            [ring.util.anti-forgery :as anti-forgery]
+            [environ.core :refer [env]])
+(:gen-class))
+
+(defn init []
+  (println "chatter is starting"))
+
+(defn destroy []
+  (println "chatter is shutting down"))
 
 (def styles
   (css [:p {:font-size "30px"}]
@@ -15,6 +25,7 @@
     (atom [{:name "blue" :message "hello, world"}
           {:name "red" :message "red is my favorite color"}
           {:name "green" :message "green makes it go faster"}]))
+
 (def new-message-form
   (form/form-to
       [:post "/"]
@@ -63,3 +74,7 @@
   (route/not-found "Not Found"))
 
 (def app (wrap-params app-routes))
+
+(defn -main [& [port]]
+  (let [port (Integer. (or port (env :port) 5000))]
+        (jetty/run-jetty #'app {:port port :join? false})))
